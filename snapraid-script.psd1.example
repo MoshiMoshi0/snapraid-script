@@ -34,6 +34,6 @@
         # if $True, sends notifications when script was successfully executed
         OnSuccess = $False
         # if $True, sends notifications when script failed
-        OnFailure = $True
+        OnFailure = $False
     }
 }

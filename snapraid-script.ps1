@@ -13,15 +13,8 @@ function Send-Notification {
         [Parameter(Mandatory=$True)][ValidateNotNullOrEmpty()][ValidateSet("SUCCESS", "FAILURE")][String] $Status
     )
 
-    Stop-Transcript | Out-Null
     if( $Credential -eq $Null ){
-        Exit
-    }
-    
-    if( $Config.Notification.OnSuccess -eq $False -and $Status -eq "SUCCESS" ) {
-        Exit
-    } elseif( $Config.Notification.OnFailure -eq $False -and $Status -eq "FAILURE" ) {
-        Exit
+        return
     }
 
     $Params = @{
@@ -37,14 +30,12 @@ function Send-Notification {
     Do {
         Try {
             Send-MailMessage @Params -Attachments $LogFile -Credential $Credential -ErrorAction Stop
-            Exit
+            return
         } Catch {
             $RetryCount++
             Start-Sleep -Seconds 60
         }
     } Until( $RetryCount -lt 4 )
-
-    Exit
 }
 
 function Write-Log {
@@ -110,7 +101,7 @@ function Run-Snapraid {
 
     if( $ExecutionInfo.ExitCode -eq 1 ){
         Write-Log "Execution of '$Command' failed! Aborting."
-        Send-Notification -Status "FAILURE"
+        Finalize -Status "FAILURE"
     }
 
     return $ExecutionInfo
@@ -151,16 +142,36 @@ function Initialize {
         Exit
     }
     
-    if( $Credential -eq $Null ) {
-        Write-Log "$CredentialFile file not found!"
-        Write-Log "Generating new file..."
-    
-        $Credential = Get-Credential
-        $Credential | Export-Clixml -Path $CredentialFile
+    if( $Config.Notification.OnSuccess -eq $True -or $Config.Notification.OnFailure -eq $True ) {
+        if( $Credential -eq $Null ) {
+            Write-Log "$CredentialFile file not found!"
+            Write-Log "Generating new file..."
         
-        Write-Log "Sending test notification..."
-        Send-Notification -Status "SUCCESS"
+            $Credential = Get-Credential
+            $Credential | Export-Clixml -Path $CredentialFile
+            
+            Write-Log "Sending test notification..."
+            Finalize -Status "SUCCESS"
+        }
     }
+}
+
+function Finalize {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory=$True)][ValidateNotNullOrEmpty()][ValidateSet("SUCCESS", "FAILURE")][String] $Status
+    )
+
+    Stop-Transcript | Out-Null
+
+    if( $Config.Notification.OnSuccess -eq $False -and $Status -eq "SUCCESS" ) {
+        Exit
+    } elseif( $Config.Notification.OnFailure -eq $False -and $Status -eq "FAILURE" ) {
+        Exit
+    }
+
+    Send-Notification -Status $Status
+    Exit
 }
 
 Initialize
@@ -168,10 +179,10 @@ Initialize
 $DiffInfo = Run-Snapraid -Command "diff" | Get-Diff-Info
 
 if( $DiffInfo -eq $Null ) {
-    Send-Notification -Status "FAILURE"
+    Finalize -Status "FAILURE"
 } elseif( $DiffInfo["removed"] -gt $Config.Snapraid.Diff.DeleteThreshold ) {
     Write-Log ("Number of removed files exceeds configured threshold! ({0} > {1})" -f $DiffInfo["removed"],$Config.Snapraid.Diff.DeleteThreshold)
-    Send-Notification -Status "FAILURE"
+    Finalize -Status "FAILURE"
 } 
 
 if( $DiffInfo["needs_sync"] -eq $True ) {
@@ -181,4 +192,4 @@ if( $DiffInfo["needs_sync"] -eq $True ) {
 Run-Snapraid -Command "scrub" -Params "--plan",$Config.Snapraid.Scrub.Plan,"--older-than",$Config.Snapraid.Scrub.OlderThan | Out-Null
 Run-Snapraid -Command "status" | Out-Null
 
-Send-Notification -Status "SUCCESS"
+Finalize -Status "SUCCESS"
