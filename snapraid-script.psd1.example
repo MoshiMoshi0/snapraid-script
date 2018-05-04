@@ -1,0 +1,39 @@
+@{
+    Snapraid = @{
+        # path to snapraid executable
+        Executable = ".\\snapraid.exe"
+
+        Diff = @{
+            # if number of deleted files since last sync exceeds this value, abort the script
+            # set to 0 to disable
+            DeleteThreshold = 50
+        }
+
+        Scrub = @{
+            # "bad" - Scrub blocks marked bad
+            # "new" - Scrub just synced blocks not yet scrubbed
+            # "full" - Scrub everything
+            # 0-100 - Scrub the exact percentage of blocks
+            Plan = 2
+
+            # minimum age in days for a block to be scrubbed
+            OlderThan = 7
+        }
+    }
+
+    # email settings to use when sending notifications
+    Email = @{
+        SmtpServer = "smtp.example.com"
+        Port = 587
+        UseSsl = $True
+        From = "from@example.com"
+        To = "to@example.com"
+    }
+
+    Notification = @{
+        # if $True, sends notifications when script was successfully executed
+        OnSuccess = $False
+        # if $True, sends notifications when script failed
+        OnFailure = $True
+    }
+}
