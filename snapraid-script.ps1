@@ -145,9 +145,9 @@ function Initialize {
     if( $Config.Notification.OnSuccess -eq $True -or $Config.Notification.OnFailure -eq $True ) {
         if( $Credential -eq $Null ) {
             Write-Log "$CredentialFile file not found!"
-            Write-Log "Generating new file..."
+            Write-Log "Prompting user for new credentials..."
         
-            $Credential = Get-Credential
+            $Credential = Get-Credential -Message "Enter your smtp username and password:"
             $Credential | Export-Clixml -Path $CredentialFile
             
             Write-Log "Sending test notification..."
