@@ -148,6 +148,11 @@ function Initialize {
             Write-Log "Prompting user for new credentials..."
         
             $Credential = Get-Credential -Message "Enter your smtp username and password:"
+            if( $Credential -eq $Null ) {
+                Write-Log "Canceled by user"
+                Exit
+            }
+
             $Credential | Export-Clixml -Path $CredentialFile
             
             Write-Log "Sending test notification..."
