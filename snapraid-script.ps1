@@ -47,7 +47,7 @@ function Write-Log {
     process {
         $Format = "[{0}]: {1}"
         $Stamp = (Get-Date).toString("yyyy/MM/dd HH:mm:ss:fff")
-        $Message -split "\n+" | %{ $Format -f ($Stamp, $_) } | Write-Host
+        $Message -split "[\n\r]+" | %{ $Format -f ($Stamp, $_) } | %{ $_.TrimEnd() } | Write-Host
     }
 }
 
