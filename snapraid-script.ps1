@@ -64,7 +64,7 @@ function Write-Header {
     Write-Log ('-' * $Length)
 }
 
-function Write-ExectutionInfo {
+function Write-ExecutionInfo {
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory=$True)][ValidateNotNull()][PSCustomObject] $Info,
@@ -97,7 +97,7 @@ function Run-Snapraid {
         Duration = $TimeSpan
     }
 
-    Write-ExectutionInfo $ExecutionInfo
+    Write-ExecutionInfo $ExecutionInfo
 
     if( $ExecutionInfo.ExitCode -eq 1 ){
         Write-Log "Execution of '$Command' failed! Aborting."
