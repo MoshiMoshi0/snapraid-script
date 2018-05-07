@@ -77,6 +77,14 @@ function Write-ExecutionInfo {
     Write-Log ('-' * $Length)
 }
 
+function Check-SafeToRun {
+    if( !(($Process = Get-Process "snapraid" -ErrorAction SilentlyContinue) -eq $Null) ) {
+        Write-Log "Failed to start snapraid because another snapraid process is already running!"
+        Write-Log ($Process | Out-String)
+        Finalize -Status "FAILURE"
+    }
+}
+
 function Run-Snapraid {
     [CmdletBinding()]
     Param(
@@ -86,6 +94,8 @@ function Run-Snapraid {
 
     Write-Header ("{0} {1} {2}" -f $Config.Snapraid.Executable,$Command,"$Params")
     
+    Check-SafeToRun
+
     $Output = ""
     $TimeSpan = Measure-Command {
         &$Config.Snapraid.Executable $Command $Params 2>&1 3>&1 4>&1 | %{ "$_" } | Tee-Object -Variable Output | Write-Log
