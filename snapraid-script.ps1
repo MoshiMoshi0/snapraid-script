@@ -107,7 +107,7 @@ function Run-Snapraid {
     return $ExecutionInfo
 }
 
-function Get-Diff-Info {
+function Get-DiffInfo {
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory=$True, ValueFromPipeline)][ValidateNotNull()][PSCustomObject] $ExecutionInfo
@@ -181,7 +181,7 @@ function Finalize {
 
 Initialize
 
-$DiffInfo = Run-Snapraid -Command "diff" | Get-Diff-Info
+$DiffInfo = Run-Snapraid -Command "diff" | Get-DiffInfo
 
 if( $DiffInfo -eq $Null ) {
     Finalize -Status "FAILURE"
