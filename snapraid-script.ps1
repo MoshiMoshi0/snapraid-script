@@ -191,6 +191,7 @@ function Finalize {
 
 Initialize
 
+Run-Snapraid -Command "touch"
 $DiffInfo = Run-Snapraid -Command "diff" | Get-DiffInfo
 
 if( $DiffInfo -eq $Null ) {
