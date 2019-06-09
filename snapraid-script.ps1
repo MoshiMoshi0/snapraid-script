@@ -196,7 +196,7 @@ $DiffInfo = Run-Snapraid -Command "diff" | Get-DiffInfo
 
 if( $DiffInfo -eq $Null ) {
     Finalize -Status "FAILURE"
-} elseif( $DiffInfo["removed"] -gt $Config.Snapraid.Diff.DeleteThreshold ) {
+} elseif( $Config.Snapraid.Diff.DeleteThreshold -gt 0 -and $DiffInfo["removed"] -gt $Config.Snapraid.Diff.DeleteThreshold ) {
     Write-Log ("Number of removed files exceeds configured threshold! ({0} > {1})" -f $DiffInfo["removed"],$Config.Snapraid.Diff.DeleteThreshold)
     Finalize -Status "FAILURE"
 } 
